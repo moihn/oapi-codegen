@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"strconv"
 	"time"
 )
 
@@ -46,6 +47,10 @@ type Time struct {
 	time.Time
 }
 
+func (t Time) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.Time.Format(time.RFC3339))
+}
+
 func (t *Time) UnmarshalJSON(data []byte) error {
 	var timeStr string
 	err := json.Unmarshal(data, &timeStr)
@@ -65,4 +70,33 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 	}
 
 	return err1
+}
+
+type Int64 struct {
+	int64
+}
+
+func (i Int64) MarshalJSON() ([]byte, error) {
+	return json.Marshal(i.int64)
+}
+
+func (i *Int64) UnmarshalJSON(data []byte) error {
+	var int64Value int64
+	err := json.Unmarshal(data, &int64Value)
+	if err == nil {
+		i.int64 = int64Value
+		return nil
+	}
+
+	var int64Str string
+	err = json.Unmarshal(data, &int64Str)
+	if err == nil {
+		int64Value, err = strconv.ParseInt(int64Str, 10, 64)
+		if err == nil {
+			i.int64 = int64Value
+			return nil
+		}
+		return err
+	}
+	return err
 }
